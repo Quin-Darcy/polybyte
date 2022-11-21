@@ -123,6 +123,37 @@ impl PolyByte {
     }
 }
 
+struct PolyWord {
+    word: u32,
+}
+
+impl PolyWord {
+    pub fn new() -> PolyWord {
+        PolyWord {
+            word: 0_u32, 
+        }
+    }
+
+    pub fn from_word(w: u32) -> PolyWord {
+        PolyWord {
+            word: w,
+        }
+    }
+
+    pub fn add(&mut self, w: PolyWord) {
+        let mut summed_bytes: [u8; 4] = [0_u8; 4]; 
+        let mut a: PolyByte;
+        let mut b: PolyByte;
+        for i in 0..4 {
+            a = PolyByte::from_byte(self.word.to_be_bytes()[i]);
+            b = PolyByte::from_byte(w.word.to_be_bytes()[i]);
+            a.add(b);
+            summed_bytes[i] = a.byte; 
+        }
+        self.word = u32::from_be_bytes(summed_bytes);
+    }
+}
+
 fn byte_to_bin(b: u8) -> [u8; 8] {
     let mut t: u8 = 1;
     let mut n: u8 = b;
