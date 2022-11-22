@@ -100,7 +100,6 @@ impl PolyByte {
         let mut mult_val: PolyByte;
         let mut new_polybyte: PolyByte = PolyByte::new();
 
-        println!("{:0x}", &new_polybyte.byte);
         for i in 0..8 {
             if bin[i] == 1 {
                 mult_val = b2.clone();
@@ -109,7 +108,6 @@ impl PolyByte {
                     mult_val.xtimes(); 
                 }
                 new_polybyte.add(mult_val);
-                println!("{:0x}", &new_polybyte.byte);
             }
         }
         new_polybyte
@@ -140,6 +138,12 @@ impl PolyWord {
         }
     }
 
+    pub fn from_bytes(b: [u8; 4]) -> PolyWord {
+        PolyWord {
+            word: u32::from_be_bytes(b),
+        }
+    }
+
     pub fn add(&mut self, w: PolyWord) {
         let mut summed_bytes: [u8; 4] = [0_u8; 4]; 
         let mut a: PolyByte;
@@ -151,6 +155,30 @@ impl PolyWord {
             summed_bytes[i] = a.byte; 
         }
         self.word = u32::from_be_bytes(summed_bytes);
+    }
+
+    pub fn mult(&mut self, w: PolyWord) {
+        let b1: [u8; 4] = self.word.to_be_bytes();
+        let b2: [u8; 4] = w.word.to_be_bytes();
+        let mult_mat: [[u8; 4]; 4] = [[b1[0], b1[1], b1[2], b1[3]],
+                                      [b1[3], b1[0], b1[1], b1[2]],
+                                      [b1[2], b1[3], b1[0], b1[1]],
+                                      [b1[1], b1[2], b1[3], b1[0]]];
+        
+        let mut new_word: [u8; 4] = [0_u8; 4];
+        let mut pb1: PolyByte;
+        let mut pb2: PolyByte;
+        let mut pb3: PolyByte;
+        for i in 0..4 {
+            let mut pb1: PolyByte = PolyByte::from_byte(new_word[i]);
+            for j in 0..4 {
+                let mut pb2: PolyByte = PolyByte::from_byte(mult_mat[j][i]);
+                let mut pb3: PolyByte = PolyByte::from_byte(b2[j]);
+                pb1.add(PolyByte::prod(&pb2, &mut pb3));
+            }
+            new_word[i] = pb1.byte;
+        }
+        self.word = u32::from_be_bytes(new_word);
     }
 }
 
@@ -165,7 +193,7 @@ fn byte_to_bin(b: u8) -> [u8; 8] {
         for _ in 0..8 {
             if t == 0 { break;  }
             index += 1;
-            t = n >> index;
+            t = (n >> index) & 0x0f;
         }
         n = n-2_u8.pow((index-1) as u32);
         bin_rep[8-index] = 1;
@@ -183,8 +211,12 @@ mod tests {
     fn test_add() {
         let mut p: PolyByte = PolyByte::from_byte(0xa4);
         let mut q: PolyByte = PolyByte::from_byte(0x39);
+        let mut w: PolyWord = PolyWord::from_word(0xcd435f17);
+        let mut v: PolyWord = PolyWord::from_word(0x55de3faa);
         p.add(q);
+        w.add(v);
         assert_eq!(p.byte, 0x9d);
+        assert_eq!(w.word, 0x989d60bd);
     }
 
     #[test]
@@ -198,8 +230,12 @@ mod tests {
     fn test_mult() {
         let mut p: PolyByte = PolyByte::from_byte(0x57);
         let mut q: PolyByte = PolyByte::from_byte(0x13);
-        p.mult(&mut q);
+        //let mut w: PolyWord = PolyWord::from_word(0x12121212);
+        //let mut v: PolyWord = PolyWord::from_word(0x21212121);
+        //p.mult(&mut q);
+        w.mult(v);
         assert_eq!(p.byte, 0xfe);
+        //assert_eq!(w.word, 0x13f11f1d);
     }
 
     #[test]
@@ -216,3 +252,4 @@ mod tests {
         assert_eq!(PolyByte::prod(&p, &mut q).byte, 0x01);
     }
 }
+
