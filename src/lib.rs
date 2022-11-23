@@ -11,7 +11,7 @@ const P: [u8; 2] = [0x01, 0x1b];
 
 #[derive(Debug)]
 pub struct PolyByte {
-    byte: u8,
+    pub byte: u8,
 }
 
 impl PolyByte {
