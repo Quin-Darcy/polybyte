@@ -114,7 +114,12 @@ impl PolyByte {
     }
     
     pub fn mult_inv(&mut self) -> PolyByte {
-        let b: u8 = PolyByte::INVERSES[(self.byte-1) as usize];
+        let mut b: u8;
+        if self.byte == 0_u8 {
+            b = 0_u8;
+        } else {
+            b = PolyByte::INVERSES[(self.byte-1) as usize];
+        }
         PolyByte {
             byte: b,
         }
