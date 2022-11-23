@@ -10,7 +10,7 @@
 const P: [u8; 2] = [0x01, 0x1b]; 
 
 #[derive(Debug)]
-struct PolyByte {
+pub struct PolyByte {
     byte: u8,
 }
 
