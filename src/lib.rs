@@ -203,6 +203,15 @@ pub fn byte_to_bin(b: u8) -> [u8; 8] {
     bin_rep
 }
 
+pub fn bin_to_byte(bin_rep:  [u8; 8]) -> u8 {
+    let mut dec_rep: u8 = 0;
+                            
+    for i in 0..8 {
+        dec_rep += bin_rep[8-1-i] * 2_u8.pow(i as u32); 
+    }
+    dec_rep
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
