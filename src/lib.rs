@@ -182,7 +182,7 @@ impl PolyWord {
     }
 }
 
-fn byte_to_bin(b: u8) -> [u8; 8] {
+pub fn byte_to_bin(b: u8) -> [u8; 8] {
     let mut t: u8 = 1;
     let mut n: u8 = b;
     let mut index: usize = 0;
@@ -232,8 +232,8 @@ mod tests {
         let mut q: PolyByte = PolyByte::from_byte(0x13);
         //let mut w: PolyWord = PolyWord::from_word(0x12121212);
         //let mut v: PolyWord = PolyWord::from_word(0x21212121);
-        //p.mult(&mut q);
-        w.mult(v);
+        p.mult(&mut q);
+        //w.mult(v);
         assert_eq!(p.byte, 0xfe);
         //assert_eq!(w.word, 0x13f11f1d);
     }
