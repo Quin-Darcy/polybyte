@@ -112,6 +112,13 @@ impl PolyByte {
         }
         new_polybyte
     }
+
+    pub fn pow(&mut self, n: u32) {
+        let mut base: PolyByte = PolyByte::from_byte(self.byte);
+        for _ in 0..n {
+            self.mult(&mut base);
+        }
+    }
     
     pub fn mult_inv(&mut self) -> PolyByte {
         let mut b: u8;
