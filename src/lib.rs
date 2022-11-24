@@ -126,8 +126,8 @@ impl PolyByte {
     }
 }
 
-struct PolyWord {
-    word: u32,
+pub struct PolyWord {
+    pub word: u32,
 }
 
 impl PolyWord {
