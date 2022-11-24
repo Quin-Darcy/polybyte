@@ -162,7 +162,7 @@ impl PolyWord {
         self.word = u32::from_be_bytes(summed_bytes);
     }
 
-    pub fn mult(&mut self, w: PolyWord) {
+    pub fn mult(&mut self, w: &PolyWord) {
         let b1: [u8; 4] = self.word.to_be_bytes();
         let b2: [u8; 4] = w.word.to_be_bytes();
         let mult_mat: [[u8; 4]; 4] = [[b1[0], b1[1], b1[2], b1[3]],
