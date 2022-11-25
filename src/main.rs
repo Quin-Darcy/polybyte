@@ -53,7 +53,7 @@ impl PolyByte {
 
     pub fn clone(&mut self) -> PolyByte {
         PolyByte {
-            byte: self.byte,
+            byte: (self.byte).clone(),
         }
     }
 
@@ -68,12 +68,14 @@ impl PolyByte {
     }
 
     pub fn xtimes(&mut self) {
+        println!("In: {:0x}", &self.byte);
         if self.byte >= 128 {
             self.byte = self.byte << P[0];
             self.byte = self.byte ^ P[1];
         } else {
             self.byte = self.byte << P[0];
         }
+        println!("Out: {:0x}", &self.byte);
     }
 
     pub fn mult(&mut self, b: &mut PolyByte) {
@@ -88,7 +90,7 @@ impl PolyByte {
                 exp = (8-i-1) as u8;
                 for j in 0..exp {
                     mult_val.xtimes();            
-                } 
+                }
                 self.add(mult_val);
             }
         }
@@ -224,6 +226,18 @@ pub fn bin_to_byte(bin_rep:  [u8; 8]) -> u8 {
     dec_rep
 }
 
+fn main() {
+    let mut c: PolyByte = PolyByte::from_byte(0x02);
+    let mut b: PolyByte = PolyByte::from_byte(0x02);
+
+    for i in 0..10 {
+        b.pow(i as u32);
+        //println!("{:0x}", &b.byte);
+        b = c.clone();
+    }
+}
+
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -272,5 +286,12 @@ mod tests {
         let mut q: PolyByte = p.mult_inv();
         assert_eq!(PolyByte::prod(&p, &mut q).byte, 0x01);
     }
-}
 
+    #[test]
+    fn test_pow() {
+        let mut b: PolyByte = PolyByte::from_byte(0x02);
+        b.pow(6_u32);
+        assert_eq!(b.byte, 0x29);
+    }
+}
+*/
