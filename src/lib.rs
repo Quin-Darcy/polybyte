@@ -179,9 +179,16 @@ impl PolyByte {
     }
 
     pub fn pow(&mut self, n: u32) {
-        let mut base: PolyByte = PolyByte::from_byte(self.byte);
-        for _ in 0..n-1 {
-            self.mult(&mut base);
+        if n == 0 {
+            self.byte = 0x01;
+        } else if n == 1 {
+            self.byte = self.byte;
+        } else {
+            let mut base: PolyByte = PolyByte::from_byte(self.byte);
+            for _ in 0..n-1 {
+                self.mult(&mut base);
+        
+            }
         }
     }
     
@@ -262,29 +269,6 @@ impl PolyWord {
 pub fn byte_to_bin(b: u8) -> [u8; 8] {
     BINS[b as usize]
 }
-
-/*
-pub fn byte_to_bin(b: u8) -> [u8; 8] {
-    let mut t: u8 = 1;
-    let mut n: u8 = b;
-    let mut index: u8 = 0;
-    let mut bin_rep: [u8; 8]= [0_u8; 8];
-                                   
-    for _ in 0..8 {
-        if n == 0 { break; }
-        for _ in 0..8 {
-            if t == 0 { break;  }
-            index += 1;
-            t = n >> index;
-        }
-        n = n-2_u8.pow((index-1) as u32);
-        bin_rep[8-(index as usize)] = 1;
-        t = 1;
-        index = 0;
-    }
-    bin_rep
-}
-*/
 
 pub fn bin_to_byte(bin_rep:  [u8; 8]) -> u8 {
     let mut dec_rep: u8 = 0;
