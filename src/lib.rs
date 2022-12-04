@@ -275,7 +275,7 @@ impl PolyByte {
         }
     }
 
-    
+    /*
     pub fn mult(&mut self, b: &mut PolyByte) {
         let bin: [u8; 8] = byte_to_bin(self.byte);
         self.byte = 0;
@@ -293,8 +293,8 @@ impl PolyByte {
             }
         }
     }
+    */
     
-    /*
     pub fn mult(&mut self, b: &mut PolyByte) {
         let bin: [u8; 8] = byte_to_bin(self.byte);
         self.byte = 0;
@@ -307,9 +307,9 @@ impl PolyByte {
             }
         }
     }
-    */
-
     
+
+    /*
     pub fn prod(b1: &PolyByte, b2: &mut PolyByte) -> PolyByte {
         let bin: [u8; 8] = byte_to_bin(b1.byte);
         let mut exp: u8;
@@ -328,8 +328,8 @@ impl PolyByte {
         }
         new_polybyte
     }
+    */
     
-    /*
     pub fn prod(b1: &PolyByte, b2: &mut PolyByte) -> PolyByte {
         let bin: [u8; 8] = byte_to_bin(b1.byte);
         let mut mult_val: PolyByte;
@@ -343,7 +343,6 @@ impl PolyByte {
         }
         new_polybyte
     }
-    */
 
     pub fn pow(&mut self, n: u32) {
         if n == 0 {
@@ -408,33 +407,6 @@ impl PolyWord {
         self.word = u32::from_be_bytes(summed_bytes);
     }
 
-    /*
-    pub fn mult(&mut self, w: &PolyWord) {
-        let b1: [u8; 4] = self.word.to_be_bytes();
-        let b2: [u8; 4] = w.word.to_be_bytes();
-        let mult_mat: [[u8; 4]; 4] = [[b1[0], b1[1], b1[2], b1[3]],
-                                      [b1[3], b1[0], b1[1], b1[2]],
-                                      [b1[2], b1[3], b1[0], b1[1]],
-                                      [b1[1], b1[2], b1[3], b1[0]]];
-        
-        let mut new_word: [u8; 4] = [0_u8; 4];
-        let mut pb1: PolyByte;
-        let mut pb2: PolyByte;
-        let mut pb3: PolyByte;
-        for i in 0..4 {
-            let mut pb1: PolyByte = PolyByte::from_byte(new_word[i]);
-            for j in 0..4 {
-                let mut pb2: PolyByte = PolyByte::from_byte(mult_mat[j][i]);
-                let mut pb3: PolyByte = PolyByte::from_byte(b2[j]);
-                pb1.add(PolyByte::prod(&pb2, &mut pb3));
-            }
-            new_word[i] = pb1.byte;
-        }
-        self.word = u32::from_be_bytes(new_word);
-    }
-    */
-    
-    
     pub fn mult(&mut self, w: &PolyWord) {
         let b1: [u8; 4] = self.word.to_be_bytes();
         let b2: [u8; 4] = w.word.to_be_bytes();
