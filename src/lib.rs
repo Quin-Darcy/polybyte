@@ -229,7 +229,8 @@ const INVERSES: [u8; 255] = [1,141,246,203,82,123,209,232,79,41,192,176,225,229,
                              35,56,52,104,70,3,140,221,156,125,160,205,26,65,28];
 
 
-#[derive(Debug)]
+#[derive(Copy)]
+#[derive(Clone)]
 pub struct PolyByte {
     pub byte: u8,
 }
@@ -246,12 +247,14 @@ impl PolyByte {
             byte: b,
         }
     }
-
+    
+    /*
     pub fn clone(&mut self) -> PolyByte {
         PolyByte {
             byte: (self.byte).clone(),
         }
     }
+    */
 
     pub fn add(&mut self, b: PolyByte) {
         self.byte = self.byte ^ b.byte
@@ -272,6 +275,7 @@ impl PolyByte {
         }
     }
 
+    /*
     pub fn mult(&mut self, b: &mut PolyByte) {
         let bin: [u8; 8] = byte_to_bin(self.byte);
         self.byte = 0;
@@ -285,6 +289,20 @@ impl PolyByte {
                 for j in 0..exp {
                     mult_val.xtimes();            
                 }
+                self.add(mult_val);
+            }
+        }
+    }
+    */
+
+    pub fn mult(&mut self, b: &mut PolyByte) {
+        let bin: [u8; 8] = byte_to_bin(self.byte);
+        self.byte = 0;
+        let mut mult_val: PolyByte;
+
+        for i in 0..8 {
+            if bin[i] == 1 {
+                mult_val = PolyByte::from_byte(PRODS[8-i-1][b.byte as usize]);
                 self.add(mult_val);
             }
         }
@@ -313,7 +331,6 @@ impl PolyByte {
 
     pub fn prod(b1: &PolyByte, b2: &mut PolyByte) -> PolyByte {
         let bin: [u8; 8] = byte_to_bin(b1.byte);
-        let mut exp: u8;
         let mut mult_val: PolyByte;
         let mut new_polybyte: PolyByte = PolyByte::new();
 
@@ -389,6 +406,7 @@ impl PolyWord {
         self.word = u32::from_be_bytes(summed_bytes);
     }
 
+    /*
     pub fn mult(&mut self, w: &PolyWord) {
         let b1: [u8; 4] = self.word.to_be_bytes();
         let b2: [u8; 4] = w.word.to_be_bytes();
@@ -411,6 +429,36 @@ impl PolyWord {
             new_word[i] = pb1.byte;
         }
         self.word = u32::from_be_bytes(new_word);
+    }
+    */
+    pub fn mult(&mut self, w: &PolyWord) {
+        let b1: [u8; 4] = self.word.to_be_bytes();
+        let b2: [u8; 4] = w.word.to_be_bytes();
+        
+        let mut tmp_pb: PolyByte = PolyByte::new();
+        let mut new_byte_vec: [u8; 4] = [0_u8; 4];
+        let mut pb_vec: [PolyByte; 4] = [PolyByte::from_byte(b2[0]), PolyByte::from_byte(b2[1]),
+                                     PolyByte::from_byte(b2[2]), PolyByte::from_byte(b2[1])];       
+        
+        let pb_mat: [[PolyByte; 4]; 4] = [[PolyByte::from_byte(b1[0]), PolyByte::from_byte(b1[3]),
+                                           PolyByte::from_byte(b1[2]), PolyByte::from_byte(b1[1])],
+                                          
+                                          [PolyByte::from_byte(b1[1]), PolyByte::from_byte(b1[0]),
+                                           PolyByte::from_byte(b1[3]), PolyByte::from_byte(b1[2])],
+                                          
+                                          [PolyByte::from_byte(b1[2]), PolyByte::from_byte(b1[1]),
+                                           PolyByte::from_byte(b1[0]), PolyByte::from_byte(b1[3])],
+
+                                          [PolyByte::from_byte(b1[3]), PolyByte::from_byte(b1[2]),
+                                           PolyByte::from_byte(b1[1]), PolyByte::from_byte(b1[0])]];
+        
+        for i in 0..4 {
+            for j in 0..4 {
+                tmp_pb.add(PolyByte::prod(&pb_mat[i][j], &mut pb_vec[j]));
+            }
+            new_byte_vec[i] = tmp_pb.byte;
+        }
+        self.word = u32::from_be_bytes(new_byte_vec);
     }
 }
 
@@ -454,12 +502,12 @@ mod tests {
     fn test_mult() {
         let mut p: PolyByte = PolyByte::from_byte(0x57);
         let mut q: PolyByte = PolyByte::from_byte(0x13);
-        //let mut w: PolyWord = PolyWord::from_word(0x12121212);
-        //let mut v: PolyWord = PolyWord::from_word(0x21212121);
+        let mut w: PolyWord = PolyWord::from_word(0x12121212);
+        let mut v: PolyWord = PolyWord::from_word(0x21212121);
         p.mult(&mut q);
-        //w.mult(v);
+        w.mult(&v);
         assert_eq!(p.byte, 0xfe);
-        //assert_eq!(w.word, 0x13f11f1d);
+        assert_eq!(w.word, 0x13f11f1d);
     }
 
     #[test]

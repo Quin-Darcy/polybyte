@@ -9,3 +9,6 @@ edition = "2021"
 
 [profile.dev]
 overflow-check = false
+
+[profile.test]
+overflow-check = false
