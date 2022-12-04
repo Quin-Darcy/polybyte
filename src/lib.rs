@@ -248,14 +248,6 @@ impl PolyByte {
         }
     }
     
-    /*
-    pub fn clone(&mut self) -> PolyByte {
-        PolyByte {
-            byte: (self.byte).clone(),
-        }
-    }
-    */
-
     pub fn add(&mut self, b: PolyByte) {
         self.byte = self.byte ^ b.byte
     }
@@ -275,26 +267,6 @@ impl PolyByte {
         }
     }
 
-    /*
-    pub fn mult(&mut self, b: &mut PolyByte) {
-        let bin: [u8; 8] = byte_to_bin(self.byte);
-        self.byte = 0;
-        let mut exp: u8;
-        let mut mult_val: PolyByte;
-
-        for i in 0..8 {
-            if bin[i] == 1 {
-                mult_val = b.clone();
-                exp = (8-i-1) as u8;
-                for j in 0..exp {
-                    mult_val.xtimes();            
-                }
-                self.add(mult_val);
-            }
-        }
-    }
-    */
-    
     pub fn mult(&mut self, b: &mut PolyByte) {
         let bin: [u8; 8] = byte_to_bin(self.byte);
         self.byte = 0;
@@ -307,28 +279,6 @@ impl PolyByte {
             }
         }
     }
-    
-
-    /*
-    pub fn prod(b1: &PolyByte, b2: &mut PolyByte) -> PolyByte {
-        let bin: [u8; 8] = byte_to_bin(b1.byte);
-        let mut exp: u8;
-        let mut mult_val: PolyByte;
-        let mut new_polybyte: PolyByte = PolyByte::new();
-
-        for i in 0..8 {
-            if bin[i] == 1 {
-                mult_val = b2.clone();
-                exp = (8-i-1) as u8;
-                for j in 0..exp {
-                    mult_val.xtimes(); 
-                }
-                new_polybyte.add(mult_val);
-            }
-        }
-        new_polybyte
-    }
-    */
     
     pub fn prod(b1: &PolyByte, b2: &mut PolyByte) -> PolyByte {
         let bin: [u8; 8] = byte_to_bin(b1.byte);
