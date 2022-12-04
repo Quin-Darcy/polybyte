@@ -275,7 +275,7 @@ impl PolyByte {
         }
     }
 
-    /*
+    
     pub fn mult(&mut self, b: &mut PolyByte) {
         let bin: [u8; 8] = byte_to_bin(self.byte);
         self.byte = 0;
@@ -293,8 +293,8 @@ impl PolyByte {
             }
         }
     }
-    */
-
+    
+    /*
     pub fn mult(&mut self, b: &mut PolyByte) {
         let bin: [u8; 8] = byte_to_bin(self.byte);
         self.byte = 0;
@@ -307,8 +307,9 @@ impl PolyByte {
             }
         }
     }
+    */
 
-    /*
+    
     pub fn prod(b1: &PolyByte, b2: &mut PolyByte) -> PolyByte {
         let bin: [u8; 8] = byte_to_bin(b1.byte);
         let mut exp: u8;
@@ -327,8 +328,8 @@ impl PolyByte {
         }
         new_polybyte
     }
-    */
-
+    
+    /*
     pub fn prod(b1: &PolyByte, b2: &mut PolyByte) -> PolyByte {
         let bin: [u8; 8] = byte_to_bin(b1.byte);
         let mut mult_val: PolyByte;
@@ -342,6 +343,7 @@ impl PolyByte {
         }
         new_polybyte
     }
+    */
 
     pub fn pow(&mut self, n: u32) {
         if n == 0 {
@@ -406,7 +408,7 @@ impl PolyWord {
         self.word = u32::from_be_bytes(summed_bytes);
     }
 
-    /*
+    
     pub fn mult(&mut self, w: &PolyWord) {
         let b1: [u8; 4] = self.word.to_be_bytes();
         let b2: [u8; 4] = w.word.to_be_bytes();
@@ -430,7 +432,8 @@ impl PolyWord {
         }
         self.word = u32::from_be_bytes(new_word);
     }
-    */
+    
+    /*
     pub fn mult(&mut self, w: &PolyWord) {
         let b1: [u8; 4] = self.word.to_be_bytes();
         let b2: [u8; 4] = w.word.to_be_bytes();
@@ -460,6 +463,7 @@ impl PolyWord {
         }
         self.word = u32::from_be_bytes(new_byte_vec);
     }
+    */
 }
 
 pub fn byte_to_bin(b: u8) -> [u8; 8] {
@@ -502,12 +506,12 @@ mod tests {
     fn test_mult() {
         let mut p: PolyByte = PolyByte::from_byte(0x57);
         let mut q: PolyByte = PolyByte::from_byte(0x13);
-        let mut w: PolyWord = PolyWord::from_word(0x12121212);
-        let mut v: PolyWord = PolyWord::from_word(0x21212121);
+        //let mut w: PolyWord = PolyWord::from_word(0x12121212);
+        //let mut v: PolyWord = PolyWord::from_word(0x21212121);
         p.mult(&mut q);
-        w.mult(&v);
+        //w.mult(&v);
         assert_eq!(p.byte, 0xfe);
-        assert_eq!(w.word, 0x13f11f1d);
+        //assert_eq!(w.word, 0x13f11f1d);
     }
 
     #[test]
