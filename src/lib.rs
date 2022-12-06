@@ -1,9 +1,5 @@
 #![allow(non_upper_case_globals)]
 
-#[macro_use]
-extern crate lazy_static;
-use std::sync::Mutex;
-
 // Represents the two bytes of the irreducible polynomial
 // which generates the ideal (P)_i in the quotient ring Z_2[X] / (P)_i
 // that all PolyBytes are defined in.
@@ -230,10 +226,8 @@ const INVERSES: [u8; 255] = [1,141,246,203,82,123,209,232,79,41,192,176,225,229,
                              13,214,235,198,14,207,173,8,78,215,227,93,80,30,179,91,
                              35,56,52,104,70,3,140,221,156,125,160,205,26,65,28];
 
-// Global cache which is added to for every product between two bytes
-lazy_static! {
-    static ref GLOBAL_PRODUCT_CACHE: Mutex<[[u8; 256]; 256]> = Mutex::new([[0_u8; 256]; 256]);
-}
+// Cache which fills during runtime containing all products taken throughout runtime
+static mut GLOBAL_PRODUCT_CACHE: [[u8; 256]; 256] = [[0_u8; 256]; 256];
 
 #[derive(Copy)]
 #[derive(Clone)]
@@ -253,7 +247,7 @@ impl PolyByte {
             byte: b,
         }
     }
-    
+
     pub fn add(&mut self, b: PolyByte) {
         self.byte = self.byte ^ b.byte
     }
@@ -278,40 +272,44 @@ impl PolyByte {
         self.byte = 0;
         let mut mult_val: PolyByte;
 
-        if GLOBAL_PRODUCT_CACHE.lock().unwrap()[self.byte as usize][b.byte as usize] != 0 {
-            self.byte = GLOBAL_PRODUCT_CACHE.lock().unwrap()[self.byte as usize][b.byte as usize];
-        } else {
-            let temp: u8 = self.byte;
-            for i in 0..8 {
-                if bin[i] == 1 {
-                    mult_val = PolyByte::from_byte(XPOW_PRODS[8-i-1][b.byte as usize]);
-                    self.add(mult_val);
+        unsafe{
+            if GLOBAL_PRODUCT_CACHE[self.byte as usize][b.byte as usize] != 0 {
+                self.byte = GLOBAL_PRODUCT_CACHE[self.byte as usize][b.byte as usize];
+            } else {
+                let temp: u8 = self.byte;
+                for i in 0..8 {
+                    if bin[i] == 1 {
+                        mult_val = PolyByte::from_byte(XPOW_PRODS[8-i-1][b.byte as usize]);
+                        self.add(mult_val);
+                    }
                 }
+                GLOBAL_PRODUCT_CACHE[temp as usize][b.byte as usize] = self.byte;
+                GLOBAL_PRODUCT_CACHE[b.byte as usize][temp as usize] = self.byte;
             }
-            GLOBAL_PRODUCT_CACHE.lock().unwrap()[temp as usize][b.byte as usize] = self.byte;
-            GLOBAL_PRODUCT_CACHE.lock().unwrap()[b.byte as usize][temp as usize] = self.byte;
         }
     }
-    
+
     pub fn prod(b1: &PolyByte, b2: &mut PolyByte) -> PolyByte {
         let bin: [u8; 8] = byte_to_bin(b1.byte);
         let mut mult_val: PolyByte;
         let mut new_polybyte: PolyByte = PolyByte::new();
 
-        if GLOBAL_PRODUCT_CACHE.lock().unwrap()[b1.byte as usize][b2.byte as usize] != 0 {
-            new_polybyte.byte = GLOBAL_PRODUCT_CACHE.lock().unwrap()[b1.byte as usize][b2.byte as usize];
-        } else {
-            let temp: u8 = b1.byte;
-            for i in 0..8 {
-                if bin[i] == 1 {
-                    mult_val = PolyByte::from_byte(XPOW_PRODS[8-i-1][b2.byte as usize]);
-                    new_polybyte.add(mult_val);
+        unsafe{
+            if GLOBAL_PRODUCT_CACHE[b1.byte as usize][b2.byte as usize] != 0 {
+                new_polybyte.byte = GLOBAL_PRODUCT_CACHE[b1.byte as usize][b2.byte as usize];
+            } else {
+                let temp: u8 = b1.byte;
+                for i in 0..8 {
+                    if bin[i] == 1 {
+                        mult_val = PolyByte::from_byte(XPOW_PRODS[8-i-1][b2.byte as usize]);
+                        new_polybyte.add(mult_val);
+                    }
                 }
+                GLOBAL_PRODUCT_CACHE[temp as usize][b2.byte as usize] = new_polybyte.byte;
+                GLOBAL_PRODUCT_CACHE[b2.byte as usize][temp as usize] = new_polybyte.byte;
             }
-            GLOBAL_PRODUCT_CACHE.lock().unwrap()[temp as usize][b2.byte as usize] = new_polybyte.byte;
-            GLOBAL_PRODUCT_CACHE.lock().unwrap()[b2.byte as usize][temp as usize] = new_polybyte.byte;
+            new_polybyte
         }
-        new_polybyte
     }
 
     pub fn pow(&mut self, n: u32) {
@@ -326,7 +324,7 @@ impl PolyByte {
             }
         }
     }
-    
+
     pub fn mult_inv(&mut self) -> PolyByte {
         let b: u8;
         if self.byte == 0_u8 {
@@ -347,7 +345,7 @@ pub struct PolyWord {
 impl PolyWord {
     pub fn new() -> PolyWord {
         PolyWord {
-            word: 0_u32, 
+            word: 0_u32,
         }
     }
 
@@ -364,14 +362,14 @@ impl PolyWord {
     }
 
     pub fn add(&mut self, w: PolyWord) {
-        let mut summed_bytes: [u8; 4] = [0_u8; 4]; 
+        let mut summed_bytes: [u8; 4] = [0_u8; 4];
         let mut a: PolyByte;
         let mut b: PolyByte;
         for i in 0..4 {
             a = PolyByte::from_byte(self.word.to_be_bytes()[i]);
             b = PolyByte::from_byte(w.word.to_be_bytes()[i]);
             a.add(b);
-            summed_bytes[i] = a.byte; 
+            summed_bytes[i] = a.byte;
         }
         self.word = u32::from_be_bytes(summed_bytes);
     }
@@ -379,24 +377,24 @@ impl PolyWord {
     pub fn mult(&mut self, w: &PolyWord) {
         let b1: [u8; 4] = self.word.to_be_bytes();
         let b2: [u8; 4] = w.word.to_be_bytes();
-        
+
         let mut tmp_pb: PolyByte = PolyByte::new();
         let mut new_byte_vec: [u8; 4] = [0_u8; 4];
         let mut pb_vec: [PolyByte; 4] = [PolyByte::from_byte(b2[0]), PolyByte::from_byte(b2[1]),
-                                     PolyByte::from_byte(b2[2]), PolyByte::from_byte(b2[1])];       
-        
+                                     PolyByte::from_byte(b2[2]), PolyByte::from_byte(b2[1])];
+
         let pb_mat: [[PolyByte; 4]; 4] = [[PolyByte::from_byte(b1[0]), PolyByte::from_byte(b1[3]),
                                            PolyByte::from_byte(b1[2]), PolyByte::from_byte(b1[1])],
-                                          
+
                                           [PolyByte::from_byte(b1[1]), PolyByte::from_byte(b1[0]),
                                            PolyByte::from_byte(b1[3]), PolyByte::from_byte(b1[2])],
-                                          
+
                                           [PolyByte::from_byte(b1[2]), PolyByte::from_byte(b1[1]),
                                            PolyByte::from_byte(b1[0]), PolyByte::from_byte(b1[3])],
 
                                           [PolyByte::from_byte(b1[3]), PolyByte::from_byte(b1[2]),
                                            PolyByte::from_byte(b1[1]), PolyByte::from_byte(b1[0])]];
-        
+
         for i in 0..4 {
             for j in 0..4 {
                 tmp_pb.add(PolyByte::prod(&pb_mat[i][j], &mut pb_vec[j]));
@@ -405,21 +403,21 @@ impl PolyWord {
         }
         self.word = u32::from_be_bytes(new_byte_vec);
     }
-    
+
 }
 
-pub fn byte_to_bin(b: u8) -> [u8; 8] {
-    BINS[b as usize]
-}
-
-pub fn bin_to_byte(bin_rep:  [u8; 8]) -> u8 {
-    let mut dec_rep: u8 = 0;
-                            
-    for i in 0..8 {
-        dec_rep += bin_rep[8-1-i] * 2_u8.pow(i as u32); 
+    pub fn byte_to_bin(b: u8) -> [u8; 8] {
+        BINS[b as usize]
     }
-    dec_rep
-}
+
+    pub fn bin_to_byte(bin_rep:  [u8; 8]) -> u8 {
+        let mut dec_rep: u8 = 0;
+
+        for i in 0..8 {
+            dec_rep += bin_rep[8-1-i] * 2_u8.pow(i as u32);
+        }
+        dec_rep
+    }
 
 #[cfg(test)]
 mod tests {
@@ -477,4 +475,5 @@ mod tests {
         assert_eq!(b.byte, 0x04);
     }
 }
+
 
